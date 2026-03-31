@@ -182,19 +182,31 @@ try:
         else:
             st.warning("Not enough data points in this segment to run a simulation.")
 
-    # --- EXECUTIVE RECOMMENDATIONS ---
+# --- EXECUTIVE RECOMMENDATIONS ---
     st.markdown("---")
     st.header("💡 Strategic Recommendations")
     rec1, rec2 = st.columns(2)
+    
     with rec1:
         st.write("### 🚨 Immediate Actions")
         if critical_count > 0:
-            st.error(f"**Targeted Support:** {critical_count} students are in the high-risk zone. Priority counseling required.")
+            st.error(f"**Targeted Support:** {critical_count} students identified in the high-risk zone. Immediate academic counseling is recommended.")
         if df['Attendance'].mean() < 85:
-            st.warning("**Attendance Alert:** Low attendance detected. Verify if external load is causing absenteeism.")
+            st.warning("**Attendance Alert:** Low attendance detected. Investigation required to see if external load is causing absenteeism.")
+            
     with rec2:
         st.write("### 📅 Long-term Strategy")
-        st.info(f"Policy for **{selected_income}** Class: Focus on reducing 'External Load' via infrastructure or financial aid to reclaim study time.")
+        # Logic: We calculate the potential gain to justify the investment
+        potential_gain = round(10 * slope, 1) # Impact of saving 10 hours
+        
+        st.info(f"""
+        **Focus for {selected_income} Class:** The data shows that external load is a major barrier to success. The University should implement 
+        **Load-Reduction Policies** to help students reclaim study time:
+        
+        * **Financial Shield:** Increase merit-based scholarships for high-risk segments to reduce their need for outside work.
+        * **Time Recovery:** Improve campus transit or offer subsidized near-campus housing to cut commuting time.
+        * **Academic Refocus:** Based on our model, reclaiming 10h/week for these students could improve average grades by up to **{potential_gain}%**.
+        """)
 
     st.markdown("---")
     st.subheader("📋 Priority Student Contact List")
