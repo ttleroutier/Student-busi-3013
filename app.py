@@ -72,20 +72,25 @@ try:
 
     with tab1:
         st.subheader("Performance Overview & Success Distribution")
-        k1, k2, k3, k4 = st.columns(4)
-        k1.metric("Students at Risk", f"{critical_count}")
-        k2.metric("Total Students (Segment)", f"{len(df)}")
-        k3.metric("Average Grade", f"{round(df['Exam_Score'].mean(), 1)}%")
-        k4.metric("Minimum Grade", f"{round(df['Exam_Score'].min(), 1)}%")
+        
+        # Section simplifiée avec 2 colonnes au lieu de 4
+        k1, k2 = st.columns(2)
+        k1.metric("Total Students (Segment)", f"{len(df)}")
+        k2.metric("Minimum Grade", f"{round(df['Exam_Score'].min(), 1)}%")
 
         st.info("**Interpretation:** Compare 'Critical' (Red) vs 'Non-Critical' (Blue). A leftward shift for red bars indicates that external load is actively depressing academic performance.")
         
-        fig_score_dist = px.histogram(df, x="Exam_Score", color="Is_Critical", marginal="box", 
+        fig_score_dist = px.histogram(df, 
+                                      x="Exam_Score", 
+                                      color="Is_Critical", 
+                                      marginal="box", 
                                       color_discrete_map={True: '#e74c3c', False: '#3498db'},
-                                      opacity=0.7, barmode="overlay", 
+                                      opacity=0.7, 
+                                      barmode="overlay", 
                                       labels={'Exam_Score': 'Exam Score (%)', 'Is_Critical': 'Critical Status'})
+        
+        fig_score_dist.update_layout(bargap=0.1)
         st.plotly_chart(fig_score_dist, use_container_width=True)
-
     with tab2:
         colA, colB = st.columns(2)
         with colA:
