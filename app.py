@@ -72,6 +72,10 @@ try:
 
     with tab1:
         st.subheader("Grade Distribution (Critical vs. Non-Critical)")
+        st.info("""
+        **How to interpret:** This chart shows if 'Critical' students (Red) are performing worse than 'Non-Critical' students (Blue). 
+        If the **Red bars are grouped more to the left**, it proves that high external loads are pulling grades down.
+        """)
         fig_score_dist = px.histogram(df, x="Exam_Score", color="Is_Critical", marginal="box", 
                                       color_discrete_map={True: '#e74c3c', False: '#3498db'},
                                       opacity=0.7, barmode="overlay")
@@ -81,6 +85,11 @@ try:
         colA, colB = st.columns(2)
         with colA:
             st.subheader("Study Variance by Income")
+            st.markdown("""
+            **The Study Gap:** We set a goal of 20h of study per week.
+            - **Positive (Above 0):** Students are studying more than requested.
+            - **Negative (Below 0):** Students are falling short of the study goal.
+            """)
             df_var = df.groupby(['Family_Income', 'Is_Critical'])['Study_Variance'].mean().reset_index()
             fig_var = px.bar(df_var, x="Family_Income", y="Study_Variance", color="Is_Critical", barmode="group",
                              color_discrete_map={True: '#e74c3c', False: '#3498db'})
@@ -88,12 +97,22 @@ try:
             st.plotly_chart(fig_var, use_container_width=True)
         with colB:
             st.subheader("External Load Impact")
+            st.markdown("""
+            **The Trendline:** Each dot is a student. 
+            The **downward slope** indicates that as external hours (commute + work) increase, final grades statistically decrease.
+            """)
             fig_scatter = px.scatter(df, x="External_Load", y="Exam_Score", color="Is_Critical", trendline="ols",
                                      color_discrete_map={True: '#e74c3c', False: '#3498db'})
             st.plotly_chart(fig_scatter, use_container_width=True)
 
     with tab3:
         st.subheader("Statistical Correlation Matrix")
+        st.markdown("""
+        **Correlation Guide:**
+        - **+1.0 (Green):** Strong link. When one increases, the other does too (e.g., Attendance & Grades).
+        - **-1.0 (Red):** Strong inverse link. When one increases, the other drops (e.g., Risk Score & Grades).
+        - **0.0 (Yellow):** No relationship.
+        """)
         corr_cols = ['Exam_Score', 'Hours_Studied', 'Attendance', 'Risk_Score', 'External_Load']
         corr_matrix = df[corr_cols].corr()
         fig_heatmap = ff.create_annotated_heatmap(z=corr_matrix.values, x=list(corr_matrix.columns), 
@@ -105,41 +124,40 @@ try:
         col_left, col_right = st.columns(2)
         
         with col_left:
-            # Hierarchical breakdown of the population
+            st.markdown("**Population Breakdown:** This 'Sunburst' chart shows the proportion of at-risk students within each socio-economic class.")
             fig_sun = px.sunburst(df, path=['Family_Income', 'Is_Critical'], 
                                  title="Income vs Risk Breakdown")
             st.plotly_chart(fig_sun, use_container_width=True)
         
         with col_right:
-            # Density hotspots for performance
+            st.markdown("**Performance Hotspots:** The bright yellow areas represent where the majority of students are currently 'trapped' regarding load vs performance.")
             fig_density = px.density_heatmap(df, x="External_Load", y="Exam_Score", 
                                             title="Performance Density Hotspots",
                                             color_continuous_scale="Viridis")
             st.plotly_chart(fig_density, use_container_width=True)
 
         st.markdown("---")
-        st.header("💡 Business Recommendations")
+        st.header("💡 Executive Recommendations")
         
-        # Dynamic Recommendations based on Data
         rec_col1, rec_col2 = st.columns(2)
         
         with rec_col1:
             st.write("### 🚨 Immediate Actions")
             if critical_count > 0:
-                st.error(f"**Targeted Support:** {critical_count} students are in the high-risk zone. Initiate 1-on-1 counseling for students with Risk Scores > {round(df['Risk_Score'].median(), 2)}.")
+                st.error(f"**Targeted Support:** {critical_count} students are in the high-risk zone. Action: Schedule advisory meetings.")
             if avg_attendance < 85:
-                st.warning("**Attendance Intervention:** Average attendance is low. Implement an automated SMS alert system for missed classes.")
+                st.warning("**Attendance Intervention:** Low attendance detected. Implement automated alerts.")
             else:
-                st.success("**Attendance levels** are healthy for this segment.")
+                st.success("**Attendance levels** are healthy.")
 
         with rec_col2:
             st.write("### 📅 Long-term Strategy")
             if selected_income == "Low":
-                st.info("**Financial Relief:** Data shows Low-Income students have the tightest study margins. Recommendation: Expand 'Travel Grants' to reduce commute-based time poverty.")
+                st.info("**Financial Relief:** Focus on 'Travel Grants' to reduce commute-based time poverty.")
             elif selected_income == "High":
-                st.info("**Engagement Strategy:** High-Income students show negative study variance. Recommendation: Increase academic rigor or extracurricular integration.")
+                st.info("**Engagement:** Increase extracurricular integration for high-income segments.")
             else:
-                st.info("**Hybrid Solutions:** For Mid-Income groups, offer more 'Asynchronous Learning' options to accommodate their {round(df['External_Load'].mean(), 1)}h average external load.")
+                st.info("**Flexibility:** Offer hybrid learning to accommodate the average external load.")
 
     st.markdown("---")
     st.subheader("📋 Priority Student List")
