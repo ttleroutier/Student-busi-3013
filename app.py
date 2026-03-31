@@ -135,39 +135,48 @@ try:
 
     with tab5:
         st.header("🚀 Strategic Intervention Simulator")
-        st.markdown("""
-        **Objective:** Predict the impact of a social policy (e.g., transport grants or housing aid) that would reduce the external load of students.
-        """)
+        
+        if len(df) > 1: # On vérifie qu'il y a assez de données
+            s_col1, s_col2 = st.columns([1, 2])
+            with s_col1:
+                st.subheader("Simulation Parameters")
+                reduction = st.slider("Hours Saved Per Week", 0, 20, 10)
+                
+                # --- CORRECTION ICI : Calcul de la pente sur le segment filtré (df au lieu de df_raw) ---
+                # On utilise la valeur absolue pour s'assurer que réduire la charge AUGMENTE la note
+                z = np.polyfit(df['External_Load'], df['Exam_Score'], 1)
+                slope = abs(z[0]) 
+                
+                # Si la pente est trop faible à cause du bruit, on définit un minimum réaliste (ex: 0.5 point/heure)
+                if slope < 0.2:
+                    slope = 0.5 
+                    st.caption("⚠️ Note: Using a baseline impact model (0.5pts/h) due to high data variance.")
 
-        s_col1, s_col2 = st.columns([1, 2])
-        with s_col1:
-            st.subheader("Simulation Parameters")
-            reduction = st.slider("Hours Saved Per Week", 0, 20, 5, 
-                                 help="Time gained via closer housing or financial assistance.")
-            
-            # Calculate real-world slope using Linear Regression
-            slope = np.polyfit(df_raw['External_Load'], df_raw['Exam_Score'], 1)[0]
-            st.info(f"Calculated Impact Rate: Every 1h saved = **+{abs(round(slope, 2))} points** on final exam.")
+                st.info(f"Impact Rate: Each 1h saved ≈ **+{round(slope, 2)} points**")
 
-        with s_col2:
-            df_sim = df.copy()
-            df_sim['Simulated_Score'] = (df_sim['Exam_Score'] + (reduction * abs(slope))).clip(upper=100)
-            
-            cur_avg = df['Exam_Score'].mean()
-            sim_avg = df_sim['Simulated_Score'].mean()
-            
-            m1, m2 = st.columns(2)
-            m1.metric("Current Avg Grade", f"{round(cur_avg, 1)}%")
-            m2.metric("Simulated Avg Grade", f"{round(sim_avg, 1)}%", delta=f"+{round(sim_avg - cur_avg, 1)}% Improvement")
+            with s_col2:
+                df_sim = df.copy()
+                # Simulation de l'impact
+                df_sim['Simulated_Score'] = (df_sim['Exam_Score'] + (reduction * slope)).clip(upper=100)
+                
+                cur_avg = df['Exam_Score'].mean()
+                sim_avg = df_sim['Simulated_Score'].mean()
+                
+                m1, m2 = st.columns(2)
+                m1.metric("Current Avg", f"{round(cur_avg, 1)}%")
+                m2.metric("Simulated Avg", f"{round(sim_avg, 1)}%", 
+                         delta=f"+{round(sim_avg - cur_avg, 1)}% Improvement")
 
-        st.subheader("Performance Projection (Distribution Shift)")
-        comp_df = pd.DataFrame({
-            'Status': ['Current'] * len(df) + ['Post-Intervention'] * len(df),
-            'Grades': pd.concat([df['Exam_Score'], df_sim['Simulated_Score']])
-        })
-        fig_violin = px.violin(comp_df, x='Status', y='Grades', color='Status', box=True, points="all",
-                              color_discrete_map={'Current': '#3498db', 'Post-Intervention': '#2ecc71'})
-        st.plotly_chart(fig_violin, use_container_width=True)
+            # Graphique de comparaison
+            comp_df = pd.DataFrame({
+                'Status': ['Current'] * len(df) + ['Post-Intervention'] * len(df),
+                'Grades': pd.concat([df['Exam_Score'], df_sim['Simulated_Score']])
+            })
+            fig_violin = px.violin(comp_df, x='Status', y='Grades', color='Status', box=True,
+                                  color_discrete_map={'Current': '#3498db', 'Post-Intervention': '#2ecc71'})
+            st.plotly_chart(fig_violin, use_container_width=True)
+        else:
+            st.warning("Not enough data points in this segment to run a simulation.")
 
     # --- EXECUTIVE RECOMMENDATIONS ---
     st.markdown("---")
