@@ -135,7 +135,11 @@ try:
 
     with tab5:
         st.header("🚀 Strategic Intervention Simulator")
-        
+        # --- Affichage de la logique de calcul ---
+    with st.expander("Model Logic & Mathematics"):
+        st.write("The simulation uses an **Ordinary Least Squares (OLS) Regression** model.")
+        st.latex(r"Score_{simulated} = Score_{initial} + (\Delta Hours \times |\beta|)")
+        st.write("Where β (slope) represents the statistical impact of time on performance for this specific group.")
         if len(df) > 1: # On vérifie qu'il y a assez de données
             s_col1, s_col2 = st.columns([1, 2])
             with s_col1:
