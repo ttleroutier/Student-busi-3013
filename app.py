@@ -5,7 +5,7 @@ import plotly.figure_factory as ff
 import numpy as np
 
 # --- PROFESSIONAL CONFIGURATION ---
-st.set_page_config(page_title="Academic Risk Dashboard Pro", layout="wide", page_icon="🎓")
+st.set_page_config(page_title="Academic Risk Dashboard", layout="wide", page_icon="🎓")
 
 # Custom CSS for modern UI
 st.markdown("""
@@ -42,7 +42,7 @@ try:
         df = df[df['Family_Income'] == selected_income]
 
     # --- HEADER ---
-    st.title("🎓 Academic Risk Analysis System (Pro)")
+    st.title("🎓 Academic Risk Analysis System")
     st.markdown(f"Analysis for Segment: **{selected_income}**")
     st.markdown("---")
 
